@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>&lt;MiPortfolio /&gt;</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #10111a;
+    --bg-soft: #161826;
+    --panel: #1c1e30;
+    --line: #2b2e45;
+    --text: #edeef5;
+    --muted: #8d90ab;
+    --mint: #7cffcb;
+    --amber: #ffb86b;
+    --pink: #ff7ac6;
+    --font-display: 'Space Mono', monospace;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  *{ box-sizing: border-box; margin:0; padding:0; }
+
+  html{ scroll-behavior: smooth; }
+
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  body::before{
+    content:"";
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(124,255,203,0.08), transparent 40%),
+      radial-gradient(circle at 85% 30%, rgba(255,122,198,0.07), transparent 45%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  a{ color: inherit; text-decoration: none; }
+
+  /* ---------- NAV ---------- */
+  header{
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    padding: 18px 6vw;
+    background: rgba(16,17,26,0.85);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .logo{
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
+  }
+  .logo span{ color: var(--mint); }
+
+  nav ul{
+    list-style:none;
+    display:flex;
+    gap: 28px;
+  }
+  nav a{
+    font-size: 0.9rem;
+    color: var(--muted);
+    transition: color .2s ease;
+    position: relative;
+  }
+  nav a:hover, nav a:focus-visible{ color: var(--text); }
+  nav a::after{
+    content:"";
+    position:absolute;
+    left:0; bottom:-6px;
+    width:0; height:2px;
+    background: var(--mint);
+    transition: width .25s ease;
+  }
+  nav a:hover::after{ width:100%; }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position: relative;
+    z-index: 1;
+    min-height: 92vh;
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8vh 6vw;
+    gap: 34px;
+  }
+
+  .eyebrow{
+    font-family: var(--font-display);
+    color: var(--mint);
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .hero h1{
+    font-size: clamp(2.3rem, 6vw, 4.4rem);
+    font-weight: 800;
+    line-height: 1.05;
+    max-width: 16ch;
+  }
+  .hero h1 .accent{ color: var(--mint); }
+
+  .hero p.sub{
+    color: var(--muted);
+    font-size: 1.1rem;
+    max-width: 52ch;
+  }
+
+  /* Terminal */
+  .terminal{
+    max-width: 620px;
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+    overflow: hidden;
+  }
+  .terminal-bar{
+    display:flex;
+    align-items:center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--bg-soft);
+    border-bottom: 1px solid var(--line);
+  }
+  .dot{ width:11px; height:11px; border-radius:50%; }
+  .dot.red{ background:#ff5f56; }
+  .dot.yellow{ background:#ffbd2e; }
+  .dot.green{ background:#27c93f; }
+  .terminal-title{
+    margin-left: 8px;
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .terminal-body{
+    padding: 18px 20px 24px;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    min-height: 130px;
+  }
+  .terminal-body .line{ color: var(--muted); margin-bottom: 6px; }
+  .terminal-body .line .prompt{ color: var(--pink); }
+  .terminal-body .line .fn{ color: var(--amber); }
+  #typed-output{ color: var(--mint); }
+  .cursor{
+    display:inline-block;
+    width: 8px; height: 1.05em;
+    background: var(--mint);
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  .scroll-hint{
+    position:absolute;
+    bottom: 26px; left: 6vw;
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    color: var(--muted);
+    display:flex;
+    align-items:center;
+    gap: 8px;
+  }
+  .scroll-hint .arrow{ animation: down 1.6s ease-in-out infinite; }
+  @keyframes down{
+    0%,100%{ transform: translateY(0); }
+    50%{ transform: translateY(6px); }
+  }
+
+  /* ---------- SECTIONS ---------- */
+  section{ position: relative; z-index: 1; padding: 8vh 6vw; }
+
+  .section-head{
+    display:flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+  .section-head .num{
+    font-family: var(--font-display);
+    color: var(--mint);
+    font-size: 0.9rem;
+  }
+  .section-head h2{
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 800;
+  }
+  .section-head .rule{
+    flex:1;
+    height:1px;
+    background: var(--line);
+  }
+
+  /* ---------- FILTERS ---------- */
+  .filters{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+  .filter-btn{
+    font-family: var(--font-display);
+    font-size: 0.82rem;
+    padding: 9px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .2s ease;
+  }
+  .filter-btn:hover{ color: var(--text); border-color: var(--mint); }
+  .filter-btn.active{
+    background: var(--mint);
+    color: #0b1410;
+    border-color: var(--mint);
+    font-weight: 700;
+  }
+
+  /* ---------- PROJECT GRID ---------- */
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 22px;
+  }
+
+  .card{
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 24px;
+    display:flex;
+    flex-direction: column;
+    gap: 14px;
+    transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+  }
+  .card:hover{
+    transform: translateY(-6px);
+    border-color: var(--mint);
+    box-shadow: 0 16px 40px rgba(124,255,203,0.08);
+  }
+  .card-top{
+    display:flex;
+    justify-content: space-between;
+    align-items:flex-start;
+  }
+  .card-icon{
+    font-size: 1.6rem;
+  }
+  .tag{
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(124,255,203,0.1);
+    color: var(--mint);
+    white-space: nowrap;
+  }
+  .card h3{ font-size: 1.15rem; font-weight: 700; }
+  .card p{ color: var(--muted); font-size: 0.92rem; flex:1; }
+  .card-links{ display:flex; gap: 16px; margin-top: 4px; }
+  .card-links a{
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    border-bottom: 1px solid var(--mint);
+    padding-bottom: 2px;
+  }
+  .card-links a:hover{ color: var(--mint); }
+
+  .card[hidden]{ display:none; }
+
+  /* ---------- ABOUT ---------- */
+  .about-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items:start;
+  }
+  .about-grid p{ color: var(--muted); font-size: 1.02rem; }
+  .about-grid p + p{ margin-top: 14px; }
+  .stack{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .chip{
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    padding: 7px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--text);
+    background: var(--bg-soft);
+  }
+
+  @media (max-width: 720px){
+    .about-grid{ grid-template-columns: 1fr; }
+    nav ul{ gap: 16px; }
+  }
+
+  /* ---------- CONTACT / FOOTER ---------- */
+  .contact{
+    text-align:center;
+    padding: 10vh 6vw;
+  }
+  .contact h2{
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    margin-bottom: 16px;
+  }
+  .contact p{ color: var(--muted); margin-bottom: 30px; }
+  .btn-main{
+    display:inline-block;
+    font-family: var(--font-display);
+    font-weight: 700;
+    padding: 14px 30px;
+    border-radius: 10px;
+    background: var(--mint);
+    color: #0b1410;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+  .btn-main:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(124,255,203,0.25);
+  }
+
+  footer{
+    border-top: 1px solid var(--line);
+    padding: 24px 6vw;
+    display:flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-family: var(--font-display);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .cursor{ animation:none; }
+    .scroll-hint .arrow{ animation:none; }
+    .card, .btn-main{ transition:none; }
+  }
+
+  a:focus-visible, button:focus-visible{
+    outline: 2px solid var(--mint);
+    outline-offset: 3px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">&lt;<span>portafolio personal</span> /&gt;</div>
+  <nav>
+    <ul>
+      <li><a href="#proyectos">Proyectos</a></li>
+      <li><a href="#sobre-mi">Sobre mí</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+  </nav>
+</header>
+
+<section class="hero">
+  <p class="eyebrow"> portafolio personal 1.0 </p>
+  <h1>Hola, soy <span class="accent">alan</span>.<br>Aprendiendo a programar, un proyecto a la vez.</h1>
+  <p class="sub">Tengo 12 años y estoy construyendo cosas con código: juegos, páginas y experimentos. Acá vas a encontrar todo lo que voy creando.</p>
+
+  <div class="terminal">
+    <div class="terminal-bar">
+      <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+      <span class="terminal-title">¡¡bienvenida a mi portafolio personal!!</span>
+    </div>
+    <div class="terminal-body">
+      <div class="line"><span class="prompt">&gt;</span> <span class="fn">lo hice con unos tutoriales😂</span>(<span id="typed-output"></span><span class="cursor"></span>)</div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <span>scroll para ver proyectos</span>
+    <span class="arrow">↓</span>
+  </div>
+</section>
+
+<section id="proyectos">
+  <div class="section-head">
+    <span class="num"></span>
+    <h2>Mis proyectos (futuros proyectos)</h2>
+    <span class="rule"></span>
+  </div>
+
+  <div class="filters" role="group" aria-label="Filtrar proyectos por categoría">
+    <button class="filter-btn active" data-filter="todos">Todos</button>
+    <button class="filter-btn" data-filter="web">🌐 Web</button>
+    <button class="filter-btn" data-filter="juegos">🎮 Juegos</button>
+    <button class="filter-btn" data-filter="apps">📱 Apps</button>
+    <button class="filter-btn" data-filter="aprendiendo">🧪 Aprendiendo</button>
+  </div>
+
+  <div class="grid" id="grid">
+
+    <article class="card" data-cat="web">
+      <div class="card-top">
+        <span class="card-icon">🌐</span>
+        <span class="tag">Web</span>
+      </div>
+      <h3>Mi primera página TiendaVirtus</h3>
+      <p>Una página hecha con Google sites donde practiqué diseño y estructura.</p>
+      <div class="card-links">
+        <a href="#" target="_blank" rel="noopener">Ver demo</a>
+        <a href="#" target="_blank" rel="noopener">Código</a>
+      </div>
+    </article>
+
+    <article class="card" data-cat="juegos">
+      <div class="card-top">
+        <span class="card-icon">🎮</span>
+        <span class="tag">Juegos</span>
+      </div>
+      <h3>Juego de la serpiente</h3>
+      <p>no lo hice todavia pero es un proyecto en el que estoy trabajando.</p>
+      <div class="card-links">
+        <a href="#" target="_blank" rel="noopener">Jugar</a>
+        <a href="#" target="_blank" rel="noopener">Código</a>
+      </div>
+    </article>
+
+    <article class="card" data-cat="apps">
+      <div class="card-top">
+        <span class="card-icon">📱</span>
+        <span class="tag">App</span>
+      </div>
+      <h3>Lista de tareas</h3>
+      <p>cuando tengo muchas ideas las anoto y las pongo como tarea asi me propongo a hacerlas.</p>
+      <div class="card-links">
+        <a href="#" target="_blank" rel="noopener">Ver demo</a>
+        <a href="#" target="_blank" rel="noopener">Código</a>
+      </div>
+    </article>
+
+    <article class="card" data-cat="aprendiendo">
+      <div class="card-top">
+        <span class="card-icon">🧪</span>
+        <span class="tag">Aprendiendo</span>
+      </div>
+      <h3>Experimentos con Python y otros</h3>
+      <p>Ejercicios y mini scripts mientras aprendo lógica de programación.</p>
+      <div class="card-links">
+        <a href="#" target="_blank" rel="noopener">Repositorio</a>
+      </div>
+    </article>
+
+    <article class="card" data-cat="web juegos">
+      <div class="card-top">
+        <span class="card-icon">🕹️</span>
+        <span class="tag">Web · Juegos</span>
+      </div>
+      <h3>¿Error:404?</h3>
+      <p>un juego apunto de terminar para jugar en el navegador.</p>
+      <div class="card-links">
+        <a href="#" target="_blank" rel="noopener">Jugar</a>
+        <a href="#" target="_blank" rel="noopener">Código</a>
+      </div>
+    </article>
+
+    <article class="card" data-cat="aprendiendo">
+      <div class="card-top">
+        <span class="card-icon">📚</span>
+        <span class="tag">Aprendiendo</span>
+      </div>
+      <h3>Proyecto nuevo</h3>
+      <p>tengo varios proyectos pendientes los cuales son juego atina el cuadrado y mas</p>
+      <div class="card-links">
+        <a href="#" target="_blank" rel="noopener">Ver demo</a>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<section id="sobre-mi">
+  <div class="section-head">
+    <span class="num"></span>
+    <h2>Sobre mí</h2>
+    <span class="rule"></span>
+  </div>
+  <div class="about-grid">
+    <div>
+      <p>Me gusta programar porque puedo crear cosas desde cero: juegos, páginas, herramientas. Cada proyecto es una excusa para aprender algo nuevo.</p>
+      <p>Esta página la fui armando yo mismo, y la voy a ir actualizando cada vez que termine un proyecto nuevo. tengo un mini enprendimiento llamado TiendaVirtus se trata de impresion 3d me gusta porque aprendi mucho con eso  y recorda siempre hace lo que te guste😎</p>
+      <p>¡nos vemos cuidate😆!</p>
+    </div>
+    <div>
+      <p style="margin-bottom:14px; color:var(--text); font-weight:600;">Con lo que estoy practicando:</p>
+      <div class="stack">
+        <span class="chip">HTML</span>
+        <span class="chip">CSS</span>
+        <span class="chip">JavaScript</span>
+        <span class="chip">Python</span>
+        <span class="chip">Git y GitHub</span>
+        <span class="chip">Scratch</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contacto" class="contact">
+  <h2>¿Querés ver más?</h2>
+  <p>Todo mi código está en GitHub. ¡Explorá mis repositorios y si quiere apoyarme y ver mas mi progreso sigueme en github!</p>
+  <a class="btn-main" href="https://github.com/xalan007x" target="_blank" rel="noopener">Visitar mi GitHub →</a>
+</section>
+
+<footer>
+  <span>hecho con código y paciencia</span>
+  <span id="year"></span>
+</footer>
+
+<script>
+  // ---- Efecto de escritura en la terminal ----
+  const phrases = [
+    "'¡Hola mundo!'",
+    "'Estoy aprendiendo a programar'",
+    "'Este es mi portfolio'"
+  ];
+  const output = document.getElementById('typed-output');
+  let phraseIndex = 0, charIndex = 0, deleting = false;
+
+  function typeLoop(){
+    const current = phrases[phraseIndex];
+    if(!deleting){
+      output.textContent = current.slice(0, charIndex + 1);
+      charIndex++;
+      if(charIndex === current.length){
+        deleting = true;
+        setTimeout(typeLoop, 1400);
+        return;
+      }
+    } else {
+      output.textContent = current.slice(0, charIndex - 1);
+      charIndex--;
+      if(charIndex === 0){
+        deleting = false;
+        phraseIndex = (phraseIndex + 1) % phrases.length;
+      }
+    }
+    setTimeout(typeLoop, deleting ? 35 : 65);
+  }
+  typeLoop();
+
+  // ---- Filtros dinámicos de proyectos ----
+  const buttons = document.querySelectorAll('.filter-btn');
+  const cards = document.querySelectorAll('.card');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const filter = btn.dataset.filter;
+
+      cards.forEach(card => {
+        const cats = card.dataset.cat.split(' ');
+        const show = filter === 'todos' || cats.includes(filter);
+        card.hidden = !show;
+      });
+    });
+  });
+
+  // ---- Año automático en el footer ----
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+
+</body>
+</html>
