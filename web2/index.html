@@ -290,6 +290,8 @@
   .card-links a:hover{ color: var(--mint); }
 
   .card[hidden]{ display:none; }
+.repo-meta{flex:0 0 auto;font-size:.78rem!important;}
+#project-status{color:var(--muted);margin:0 0 18px;min-height:1.5em;}
 
   /* ---------- ABOUT ---------- */
   .about-grid{
@@ -405,9 +407,11 @@
 <section id="proyectos">
   <div class="section-head">
     <span class="num"></span>
-    <h2>Mis proyectos (futuros proyectos)</h2>
+    <h2>Mis proyectos en GitHub</h2>
     <span class="rule"></span>
   </div>
+
+  <p id="project-status" class="project-status" role="status" aria-live="polite">Cargando repositorios públicos...</p>
 
   <div class="filters" role="group" aria-label="Filtrar proyectos por categoría">
     <button class="filter-btn active" data-filter="todos">Todos</button>
@@ -417,85 +421,7 @@
     <button class="filter-btn" data-filter="aprendiendo">🧪 Aprendiendo</button>
   </div>
 
-  <div class="grid" id="grid">
-
-    <article class="card" data-cat="web">
-      <div class="card-top">
-        <span class="card-icon">🌐</span>
-        <span class="tag">Web</span>
-      </div>
-      <h3>Mi primera página TiendaVirtus</h3>
-      <p>Una página hecha con Google sites donde practiqué diseño y estructura.</p>
-      <div class="card-links">
-        <a href="#" target="_blank" rel="noopener">Ver demo</a>
-        <a href="#" target="_blank" rel="noopener">Código</a>
-      </div>
-    </article>
-
-    <article class="card" data-cat="juegos">
-      <div class="card-top">
-        <span class="card-icon">🎮</span>
-        <span class="tag">Juegos</span>
-      </div>
-      <h3>Juego de la serpiente</h3>
-      <p>no lo hice todavia pero es un proyecto en el que estoy trabajando.</p>
-      <div class="card-links">
-        <a href="#" target="_blank" rel="noopener">Jugar</a>
-        <a href="#" target="_blank" rel="noopener">Código</a>
-      </div>
-    </article>
-
-    <article class="card" data-cat="apps">
-      <div class="card-top">
-        <span class="card-icon">📱</span>
-        <span class="tag">App</span>
-      </div>
-      <h3>Lista de tareas</h3>
-      <p>cuando tengo muchas ideas las anoto y las pongo como tarea asi me propongo a hacerlas.</p>
-      <div class="card-links">
-        <a href="#" target="_blank" rel="noopener">Ver demo</a>
-        <a href="#" target="_blank" rel="noopener">Código</a>
-      </div>
-    </article>
-
-    <article class="card" data-cat="aprendiendo">
-      <div class="card-top">
-        <span class="card-icon">🧪</span>
-        <span class="tag">Aprendiendo</span>
-      </div>
-      <h3>Experimentos con Python y otros</h3>
-      <p>Ejercicios y mini scripts mientras aprendo lógica de programación.</p>
-      <div class="card-links">
-        <a href="#" target="_blank" rel="noopener">Repositorio</a>
-      </div>
-    </article>
-
-    <article class="card" data-cat="web juegos">
-      <div class="card-top">
-        <span class="card-icon">🕹️</span>
-        <span class="tag">Web · Juegos</span>
-      </div>
-      <h3>¿Error:404?</h3>
-      <p>un juego apunto de terminar para jugar en el navegador.</p>
-      <div class="card-links">
-        <a href="#" target="_blank" rel="noopener">Jugar</a>
-        <a href="#" target="_blank" rel="noopener">Código</a>
-      </div>
-    </article>
-
-    <article class="card" data-cat="aprendiendo">
-      <div class="card-top">
-        <span class="card-icon">📚</span>
-        <span class="tag">Aprendiendo</span>
-      </div>
-      <h3>Proyecto nuevo</h3>
-      <p>tengo varios proyectos pendientes los cuales son juego atina el cuadrado y mas</p>
-      <div class="card-links">
-        <a href="#" target="_blank" rel="noopener">Ver demo</a>
-      </div>
-    </article>
-
-  </div>
+  <div class="grid" id="grid" aria-label="Repositorios públicos de xAlan007x"></div>
 </section>
 
 <section id="sobre-mi">
@@ -569,21 +495,123 @@
 
   // ---- Filtros dinámicos de proyectos ----
   const buttons = document.querySelectorAll('.filter-btn');
-  const cards = document.querySelectorAll('.card');
+  const grid = document.getElementById('grid');
+  const projectStatus = document.getElementById('project-status');
 
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      buttons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const filter = btn.dataset.filter;
+  function applyProjectFilter(filter) {
+    grid.querySelectorAll('.card').forEach(card => {
+      const categories = (card.dataset.cat || '').split(/\s+/);
+      card.hidden = filter !== 'todos' && !categories.includes(filter);
+    });
+  }
 
-      cards.forEach(card => {
-        const cats = card.dataset.cat.split(' ');
-        const show = filter === 'todos' || cats.includes(filter);
-        card.hidden = !show;
-      });
+  buttons.forEach(button => {
+    button.addEventListener('click', () => {
+      buttons.forEach(item => item.classList.remove('active'));
+      button.classList.add('active');
+      applyProjectFilter(button.dataset.filter);
     });
   });
+
+  function getProjectCategories(repo) {
+    const text = (repo.name + ' ' + (repo.description || '')).toLocaleLowerCase();
+    const categories = [];
+
+    if (/\b(game|juego|truco|serpiente|snake|cuadrado|torneo)\b/.test(text)) {
+      categories.push('juegos');
+    }
+    if (/\b(clicker|reporta|herramienta|tarea|login|iniciar)\b/.test(text) || text.includes('catálogo') || text.includes('catalogo')) {
+      categories.push('apps');
+    }
+    if (['HTML', 'CSS', 'JavaScript', 'TypeScript'].includes(repo.language)) {
+      categories.push('web');
+    }
+    if (categories.length === 0) {
+      categories.push('aprendiendo');
+    }
+    return [...new Set(categories)].join(' ');
+  }
+
+  function createProjectCard(repo) {
+    const repositoryUrl = 'https://github.com/' + encodeURIComponent(repo.owner.login) + '/' + encodeURIComponent(repo.name);
+    const article = document.createElement('article');
+    article.className = 'card';
+    article.dataset.cat = getProjectCategories(repo);
+
+    const top = document.createElement('div');
+    top.className = 'card-top';
+
+    const icon = document.createElement('span');
+    icon.className = 'card-icon';
+    icon.textContent = '📦';
+
+    const language = document.createElement('span');
+    language.className = 'tag';
+    language.textContent = repo.language || 'GitHub';
+
+    const name = document.createElement('h3');
+    name.textContent = repo.name;
+
+    const description = document.createElement('p');
+    description.textContent = repo.description || 'Repositorio público en desarrollo.';
+
+    const meta = document.createElement('p');
+    meta.className = 'repo-meta';
+    const updatedDate = repo.pushed_at
+      ? new Intl.DateTimeFormat('es-AR', { year: 'numeric', month: 'short', day: 'numeric' }).format(new Date(repo.pushed_at))
+      : 'sin actividad reciente';
+    meta.textContent = '★ ' + repo.stargazers_count + ' · Actualizado ' + updatedDate;
+
+    const links = document.createElement('div');
+    links.className = 'card-links';
+
+    const link = document.createElement('a');
+    link.href = repositoryUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = 'Ver repositorio →';
+
+    top.append(icon, language);
+    links.append(link);
+    article.append(top, name, description, meta, links);
+    return article;
+  }
+
+  async function loadGitHubProjects() {
+    try {
+      const response = await fetch(
+        'https://api.github.com/users/xAlan007x/repos?type=owner&sort=updated&direction=desc&per_page=100',
+        { headers: { Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' } }
+      );
+      if (!response.ok) {
+        throw new Error('GitHub API respondió con estado ' + response.status);
+      }
+
+      const repositories = (await response.json())
+        .filter(repo => repo.owner.login.toLowerCase() === 'xalan007x' && !repo.fork && !repo.archived && repo.size > 0)
+        .sort((a, b) => b.stargazers_count - a.stargazers_count || (Date.parse(b.pushed_at || '') || 0) - (Date.parse(a.pushed_at || '') || 0))
+        .slice(0, 6);
+
+      if (repositories.length === 0) {
+        projectStatus.textContent = 'Todavía no hay repositorios públicos para mostrar.';
+        return;
+      }
+
+      grid.replaceChildren(...repositories.map(createProjectCard));
+      projectStatus.textContent = 'Hasta 6 repositorios públicos, ordenados por estrellas y actividad reciente.';
+      applyProjectFilter(document.querySelector('.filter-btn.active')?.dataset.filter || 'todos');
+    } catch (error) {
+      projectStatus.textContent = 'No se pudieron cargar los proyectos ahora. También podés verlos en ';
+      const profileLink = document.createElement('a');
+      profileLink.href = 'https://github.com/xAlan007x?tab=repositories';
+      profileLink.target = '_blank';
+      profileLink.rel = 'noopener noreferrer';
+      profileLink.textContent = 'el perfil de GitHub';
+      projectStatus.append(profileLink, '.');
+    }
+  }
+
+  loadGitHubProjects();
 
   // ---- Año automático en el footer ----
   document.getElementById('year').textContent = new Date().getFullYear();
